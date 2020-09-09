@@ -29,11 +29,11 @@ public class BookCatalogRestController {
         UserBookCatalog catalog = new UserBookCatalog();
         catalog.setUserId(userId);
 
-        UserRating userRating = restTemplate.getForObject("http://localhost:8082/"+userId, UserRating.class);
+        UserRating userRating = restTemplate.getForObject("http://ratings-service/"+userId, UserRating.class);
 
         LinkedList<RatedBook> books = new LinkedList<>();
         userRating.getRatings().forEach((bookId, rate) -> {
-            BookInfo bookInfo = restTemplate.getForObject("http://localhost:8083/"+bookId, BookInfo.class);
+            BookInfo bookInfo = restTemplate.getForObject("http://book-info-service/"+bookId, BookInfo.class);
 
             books.add(new RatedBook(
                     bookInfo.getBookId(),
