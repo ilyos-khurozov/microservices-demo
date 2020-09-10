@@ -4,10 +4,10 @@ import org.iksoft.bookcatalogservice.dto.BookInfo;
 import org.iksoft.bookcatalogservice.dto.RatedBook;
 import org.iksoft.bookcatalogservice.dto.UserBookCatalog;
 import org.iksoft.bookcatalogservice.dto.UserRating;
+import org.iksoft.bookcatalogservice.service.BookCatalogService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.LinkedList;
 
@@ -18,10 +18,10 @@ import java.util.LinkedList;
 @RestController
 public class BookCatalogRestController {
 
-    private final RestTemplate restTemplate;
+    private final BookCatalogService bookCatalogService;
 
-    public BookCatalogRestController(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public BookCatalogRestController(BookCatalogService bookCatalogService) {
+        this.bookCatalogService = bookCatalogService;
     }
 
     @GetMapping("/{userId}")
@@ -29,11 +29,11 @@ public class BookCatalogRestController {
         UserBookCatalog catalog = new UserBookCatalog();
         catalog.setUserId(userId);
 
-        UserRating userRating = restTemplate.getForObject("http://ratings-service/"+userId, UserRating.class);
+        UserRating userRating = bookCatalogService.getUserRating(userId);
 
         LinkedList<RatedBook> books = new LinkedList<>();
         userRating.getRatings().forEach((bookId, rate) -> {
-            BookInfo bookInfo = restTemplate.getForObject("http://book-info-service/"+bookId, BookInfo.class);
+            BookInfo bookInfo = bookCatalogService.getBookInfo(bookId);
 
             books.add(new RatedBook(
                     bookInfo.getBookId(),
