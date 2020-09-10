@@ -1,6 +1,7 @@
 package org.iksoft.bookcatalogservice.service;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import org.iksoft.bookcatalogservice.dto.BookInfo;
 import org.iksoft.bookcatalogservice.dto.UserRating;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,14 @@ public class BookCatalogService {
         this.restTemplate = restTemplate;
     }
 
-    @HystrixCommand(fallbackMethod = "getFallbackUserRating")
+    @HystrixCommand(fallbackMethod = "getFallbackUserRating",
+            commandProperties = {
+                    @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "2000"),
+                    @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "10"),
+                    @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "60"),
+                    @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000")
+            }
+    )
     public UserRating getUserRating(String userId){
         return restTemplate.getForObject("http://ratings-service/"+userId, UserRating.class);
     }
@@ -37,7 +45,14 @@ public class BookCatalogService {
         return userRating;
     }
 
-    @HystrixCommand(fallbackMethod = "getFallbackBookInfo")
+    @HystrixCommand(fallbackMethod = "getFallbackBookInfo",
+            commandProperties = {
+                    @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "2000"),
+                    @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "10"),
+                    @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "60"),
+                    @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "3000")
+            }
+    )
     public BookInfo getBookInfo(String bookId){
         return restTemplate.getForObject("http://book-info-service/"+bookId, BookInfo.class);
     }
